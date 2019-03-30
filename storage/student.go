@@ -3,5 +3,5 @@ package storage
 import "statSurvey/config"
 
 type Student struct {
-	Questions [config.NbQuestions]uint8
+	Questions [config.NbQuestions]uint
 }
