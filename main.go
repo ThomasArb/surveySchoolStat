@@ -14,25 +14,25 @@ import (
 func main() {
 	classe := storeAClasseResults()
 	fmt.Println(classe)
-	saveInJSON(&classe)
 	createAllStatsForAClass(&classe)
+	saveInJSON(&classe)
 }
 
 func createAllStatsForAClass(classe *storage.Classe) {
 	classeStat := statistics.StatClasse{}
 	createQuestionsStats(classe, &classeStat)
 	createStudentsStats(classe, &classeStat)
-	fmt.Println(classeStat)
+	classe.Stats = classeStat
 }
 
 func createQuestionsStats(classe *storage.Classe, stats *statistics.StatClasse) {
 	var i uint
 	stats.StatQuestions = make([]statistics.StatQuestion, config.NbQuestions)
 	for i = 0; i < config.NbQuestions; i++ {
+		// Generate stat for a question
 		var notHappy uint
 		var happy uint
 		var sum uint
-		//Generate stat for a question
 		var j uint
 		for j = 0; j < classe.NbStudent; j++ {
 			note := classe.Students[j].Questions[i]
