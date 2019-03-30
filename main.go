@@ -30,9 +30,15 @@ func main() {
 }
 
 func storeAClasseResults() storage.Classe{
-	fmt.Print("Entrez le nom de la classe : ")
+
 	reader := bufio.NewReader(os.Stdin)
-	text,err := reader.ReadString('\n')
+	fmt.Print("Entrez le nom de la classe : ")
+	className,err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Print("Entrez le nom de l'école : ")
+	schoolName,err := reader.ReadString('\n')
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,7 +49,8 @@ func storeAClasseResults() storage.Classe{
 		log.Fatal(err)
 	}
 	classe := storage.Classe{}
-	classe.Name = text[:len(text)-1]
+	classe.Name = className[:len(className)-1]
+	classe.School = schoolName[:len(schoolName)-1]
 	classe.NbStudent = nbe
 	classe.Students = make([]storage.Student, classe.NbStudent)
 	var i uint8
