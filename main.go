@@ -4,18 +4,81 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"statSurvey/config"
 	"statSurvey/statistics"
 	"statSurvey/storage"
+	"strings"
 )
 
 func main() {
-	classe := storeAClasseResults()
-	fmt.Println(classe)
-	createAllStatsForAClass(&classe)
-	saveInJSON(&classe)
+
+	reader := bufio.NewReader(os.Stdin)
+	loop := true
+	for loop {
+		fmt.Println("Choisir une option :")
+		fmt.Println("\t- new : créer une nouvelle classe")
+		fmt.Println("\t- export : génére le tableau des statistiques")
+		fmt.Println("\t- stop : stop le programme")
+		input, _ := reader.ReadString('\n')
+		switch input {
+		case "new\n":
+			classe := storeAClasseResults()
+			createAllStatsForAClass(&classe)
+			saveInJSON(&classe)
+		case "export\n":
+			classes := loadAllClasses()
+			fmt.Println(classes)
+		case "stop\n":
+			loop = false
+		}
+	}
+
+	/*
+		classe := storeAClasseResults()
+		fmt.Println(classe)
+		createAllStatsForAClass(&classe)
+		saveInJSON(&classe)
+		classeLoad := loadAClass(classe.Name + ".json")
+		fmt.Println(classeLoad)
+	*/
+}
+
+func loadAllClasses() []storage.Classe {
+	var classes = make([]storage.Classe, 0)
+	dirname := "."
+	f, err := os.Open(dirname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	files, err := f.Readdir(-1)
+	f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		if strings.Contains(file.Name(), ".json") {
+			fmt.Println(file.Name())
+			classes = append(classes, loadAClass(file.Name()))
+		}
+	}
+	return classes
+}
+
+func loadAClass(fileName string) storage.Classe {
+	classe := storage.Classe{}
+	// Open our jsonFile
+	jsonFile, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	json.Unmarshal(byteValue, &classe)
+	defer jsonFile.Close()
+	return classe
 }
 
 func createAllStatsForAClass(classe *storage.Classe) {
