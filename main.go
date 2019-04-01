@@ -18,6 +18,7 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 	loop := true
 	for loop {
+		fmt.Println("")
 		fmt.Println("Choisir une option :")
 		fmt.Println("\t- new : créer une nouvelle classe")
 		fmt.Println("\t- export : génére le tableau des statistiques")
@@ -25,18 +26,24 @@ func main() {
 		input, _ := reader.ReadString('\n')
 		switch input {
 		case "new\n":
+			fmt.Println("Démarrage de la création d'une nouvelle classe")
 			classe := storeAClasseResults()
 			createAllStatsForAClass(&classe)
 			saveInJSON(&classe)
 		case "export\n":
+			fmt.Println("Démarrage de l'export des données")
 			classes := loadAllClasses()
 			classesBySchool := loadBySchool(classes)
+			fmt.Println("Calcul des stats par école")
 			for k, v := range classesBySchool {
 				saveStatInJSON(createStatForMutipleClasses(v), k + "Stats")
 			}
+			fmt.Println("Calcul des stats globales")
 			saveStatInJSON(createStatForMutipleClasses(classes), "allStats")
+			fmt.Println("Fin du calcul")
 		case "stop\n":
 			loop = false
+			fmt.Println("Arrêt du programme :)")
 		}
 	}
 }
@@ -64,7 +71,6 @@ func loadAllClasses() []storage.Classe {
 
 	for _, file := range files {
 		if strings.Contains(file.Name(), ".json") {
-			fmt.Println(file.Name())
 			classes = append(classes, loadAClass(file.Name()))
 		}
 	}
