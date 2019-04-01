@@ -30,20 +30,23 @@ func main() {
 			saveInJSON(&classe)
 		case "export\n":
 			classes := loadAllClasses()
-			fmt.Println(classes)
+			classesBySchool := loadBySchool(classes)
+			for k, v := range classesBySchool {
+				saveStatInJSON(createStatForMutipleClasses(v), k + "Stats")
+			}
+			saveStatInJSON(createStatForMutipleClasses(classes), "allStats")
 		case "stop\n":
 			loop = false
 		}
 	}
+}
 
-	/*
-		classe := storeAClasseResults()
-		fmt.Println(classe)
-		createAllStatsForAClass(&classe)
-		saveInJSON(&classe)
-		classeLoad := loadAClass(classe.Name + ".json")
-		fmt.Println(classeLoad)
-	*/
+func loadBySchool(classes []storage.Classe) map[string][]storage.Classe {
+	classesBySchool := make(map[string][]storage.Classe)
+	for _, classe := range classes {
+		classesBySchool[classe.School] = append(classesBySchool[classe.School], classe)
+	}
+	return classesBySchool
 }
 
 func loadAllClasses() []storage.Classe {
@@ -81,6 +84,24 @@ func loadAClass(fileName string) storage.Classe {
 	return classe
 }
 
+func createStatForMutipleClasses (classes []storage.Classe) []statistics.StatQuestion {
+	statQuestions := make([]statistics.StatQuestion, config.NbQuestions)
+	for _, classe := range classes {
+		for i := 0; i < config.NbQuestions; i++ {
+			statQuestions[i].Average += classe.Stats.StatQuestions[i].Average
+			statQuestions[i].PercentageHigh += classe.Stats.StatQuestions[i].PercentageHigh
+			statQuestions[i].PercentageLow += classe.Stats.StatQuestions[i].PercentageLow
+		}
+	}
+	for i := 0; i < config.NbQuestions; i++ {
+		statQuestions[i].Average = statQuestions[i].Average/ float64(len(classes))
+		statQuestions[i].PercentageLow = statQuestions[i].PercentageLow/ float64(len(classes))
+		statQuestions[i].PercentageHigh = statQuestions[i].PercentageHigh/ float64(len(classes))
+	}
+	return statQuestions
+}
+
+
 func createAllStatsForAClass(classe *storage.Classe) {
 	classeStat := statistics.StatClasse{}
 	createQuestionsStats(classe, &classeStat)
@@ -99,16 +120,16 @@ func createQuestionsStats(classe *storage.Classe, stats *statistics.StatClasse) 
 		var j uint
 		for j = 0; j < classe.NbStudent; j++ {
 			note := classe.Students[j].Questions[i]
-			sum += note
+			sum += note //TODO : si le resultat est 42, ignorer
 			if note >= 4 {
 				happy++
 			} else {
 				notHappy++
 			}
 		}
-		stats.StatQuestions[i].Average = float32(sum) / float32(classe.NbStudent)
-		stats.StatQuestions[i].PercentageHigh = float32(happy) * 100.0 / float32(classe.NbStudent)
-		stats.StatQuestions[i].PercentageLow = float32(notHappy) * 100.0 / float32(classe.NbStudent)
+		stats.StatQuestions[i].Average = float64(sum) / float64(classe.NbStudent)
+		stats.StatQuestions[i].PercentageHigh = float64(happy) * 100.0 / float64(classe.NbStudent)
+		stats.StatQuestions[i].PercentageLow = float64(notHappy) * 100.0 / float64(classe.NbStudent)
 	}
 
 }
@@ -121,7 +142,7 @@ func createStudentsStats(classe *storage.Classe, stats *statistics.StatClasse) {
 		student := classe.Students[i]
 		var j uint
 		for j = 0; j < config.NbQuestions; j++ {
-			if j < 9 {
+			if j < 9 { //TODO : si le resultat est 42, ignorer
 				stats.StatStudents[i].Sum1to9 += student.Questions[j]
 			} else {
 				stats.StatStudents[i].Sum10to19 += student.Questions[j]
@@ -150,6 +171,24 @@ func saveInJSON(classe *storage.Classe) {
 	f.Sync()
 	f.Close()
 }
+
+func saveStatInJSON(stats []statistics.StatQuestion, name string) {
+	jsonClasse, err := json.Marshal(stats)
+	if err != nil {
+		log.Fatal(err)
+	}
+	f, err := os.Create(name + ".json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, err = f.Write(jsonClasse)
+	if err != nil {
+		log.Fatal(err)
+	}
+	f.Sync()
+	f.Close()
+}
+
 
 func storeAClasseResults() storage.Classe {
 

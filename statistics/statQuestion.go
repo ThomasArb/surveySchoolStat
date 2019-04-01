@@ -1,7 +1,7 @@
 package statistics
 
 type StatQuestion struct {
-	Average        float32
-	PercentageLow  float32
-	PercentageHigh float32
+	Average        float64
+	PercentageLow  float64
+	PercentageHigh float64
 }
