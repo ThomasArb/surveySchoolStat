@@ -39,7 +39,7 @@ func main() {
 			classesBySchool := loadBySchool(classes)
 			fmt.Println("Calcul des stats par école")
 			for k, v := range classesBySchool {
-				saveStatInJSON(createStatForMutipleClasses(v), k + "Stats")
+				saveStatInJSON(createStatForMutipleClasses(v), k+"Stats")
 			}
 			fmt.Println("Calcul des stats globales")
 			saveStatInJSON(createStatForMutipleClasses(classes), "allStats")
@@ -108,7 +108,7 @@ func loadAClass(fileName string) storage.Classe {
 	return classe
 }
 
-func createStatForMutipleClasses (classes []storage.Classe) []statistics.StatQuestion {
+func createStatForMutipleClasses(classes []storage.Classe) []statistics.StatQuestion {
 	statQuestions := make([]statistics.StatQuestion, config.NbQuestions)
 	for _, classe := range classes {
 		for i := 0; i < config.NbQuestions; i++ {
@@ -118,13 +118,12 @@ func createStatForMutipleClasses (classes []storage.Classe) []statistics.StatQue
 		}
 	}
 	for i := 0; i < config.NbQuestions; i++ {
-		statQuestions[i].Average = statQuestions[i].Average/ float64(len(classes))
-		statQuestions[i].PercentageLow = statQuestions[i].PercentageLow/ float64(len(classes))
-		statQuestions[i].PercentageHigh = statQuestions[i].PercentageHigh/ float64(len(classes))
+		statQuestions[i].Average = statQuestions[i].Average / float64(len(classes))
+		statQuestions[i].PercentageLow = statQuestions[i].PercentageLow / float64(len(classes))
+		statQuestions[i].PercentageHigh = statQuestions[i].PercentageHigh / float64(len(classes))
 	}
 	return statQuestions
 }
-
 
 func createAllStatsForAClass(classe *storage.Classe) {
 	classeStat := statistics.StatClasse{}
@@ -191,7 +190,7 @@ func exportInCSV() {
 	for _, file := range files {
 		if strings.Contains(file.Name(), "allStats.json") {
 			exportAllInCSV()
-		}else if strings.Contains(file.Name(), "Stats.json") {
+		} else if strings.Contains(file.Name(), "Stats.json") {
 			exportSchoolInCSV(file.Name())
 		} else if strings.Contains(file.Name(), ".json") {
 			exportClasseInCSV(file.Name())
@@ -212,16 +211,16 @@ func exportClasseInCSV(fileName string) {
 	classe := storage.Classe{}
 	json.Unmarshal(byteValue, &classe)
 
-	toWrite := "Statistiques de la classe : "+ fileName[0:len(fileName)-5] +"\nÉlève n°"
-	for i := 1 ; i <= config.NbQuestions ; i++{
+	toWrite := "Statistiques de la classe : " + fileName[0:len(fileName)-5] + "\nÉlève n°"
+	for i := 1; i <= config.NbQuestions; i++ {
 		toWrite += fmt.Sprintf(",Question n°%d", i)
 	}
 	toWrite += ",Somme de la question 1 à 9,Somme de la question 10 à 19,Total\n"
 
 	var i uint
-	for i = 0; i < classe.NbStudent ; i++{
+	for i = 0; i < classe.NbStudent; i++ {
 		toWrite += fmt.Sprintf("%d,", i+1)
-		for j:= 0; j < config.NbQuestions ; j++  {
+		for j := 0; j < config.NbQuestions; j++ {
 			toWrite += fmt.Sprintf("%d,", classe.Students[i].Questions[j])
 		}
 		toWrite += fmt.Sprintf("%d,", classe.Stats.StatStudents[i].Sum1to9)
@@ -229,19 +228,17 @@ func exportClasseInCSV(fileName string) {
 		toWrite += fmt.Sprintf("%d\n", classe.Stats.StatStudents[i].SumTotal)
 	}
 	toWrite += "\nMoyenne,"
-	for k:= 0; k < config.NbQuestions ; k++ {
+	for k := 0; k < config.NbQuestions; k++ {
 		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].Average)
 	}
-	toWrite += "\nBas,"
-	for k:= 0; k < config.NbQuestions ; k++ {
+	toWrite += "\nPourcentage de réponse inférieur ou égale à 3,"
+	for k := 0; k < config.NbQuestions; k++ {
 		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageLow)
 	}
-	toWrite += "\nHaut,"
-	for k:= 0; k < config.NbQuestions ; k++ {
+	toWrite += "\nPourcentage de réponse supérieure ou égale à 4,"
+	for k := 0; k < config.NbQuestions; k++ {
 		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageHigh)
 	}
-
-
 
 	f.Write([]byte(toWrite))
 	f.Close()
@@ -262,13 +259,13 @@ func exportSchoolInCSV(fileName string) {
 	var result = make([]statistics.StatQuestion, config.NbQuestions)
 	json.Unmarshal(byteValue, &result)
 
-	toWrite := "Statistiques de l'école : "+ fileName[0:len(fileName)-5] +"\nNuméro de la question,Moyenne,Bas,Haut\n"
+	toWrite := "Statistiques de l'école : " + fileName[0:len(fileName)-5] + "\nNuméro de la question,Moyenne,Pourcentage de réponse inférieur ou égale à 3,Pourcentage de réponse supérieure ou égale à 4\n"
 	i := 1
-	for _, stat := range result{
+	for _, stat := range result {
 		aver := fmt.Sprintf("%f", stat.Average)
 		low := fmt.Sprintf("%f", stat.PercentageLow)
 		high := fmt.Sprintf("%f", stat.PercentageHigh)
-		toWrite += fmt.Sprintf("%d", i) + "," + aver  + "," + low + "," + high + "\n"
+		toWrite += fmt.Sprintf("%d", i) + "," + aver + "," + low + "," + high + "\n"
 		i++
 	}
 
@@ -291,13 +288,13 @@ func exportAllInCSV() {
 	var result = make([]statistics.StatQuestion, config.NbQuestions)
 	json.Unmarshal(byteValue, &result)
 
-	toWrite := "Statistiques globales :\nNuméro de la question,Moyenne,Bas,Haut\n"
+	toWrite := "Statistiques globales :\nNuméro de la question,Moyenne,Pourcentage de réponse inférieur ou égale à 3,Pourcentage de réponse supérieure ou égale à 4\n"
 	i := 1
-	for _, stat := range result{
+	for _, stat := range result {
 		aver := fmt.Sprintf("%f", stat.Average)
 		low := fmt.Sprintf("%f", stat.PercentageLow)
 		high := fmt.Sprintf("%f", stat.PercentageHigh)
-		toWrite += fmt.Sprintf("%d", i) + "," + aver  + "," + low + "," + high + "\n"
+		toWrite += fmt.Sprintf("%d", i) + "," + aver + "," + low + "," + high + "\n"
 		i++
 	}
 
@@ -339,7 +336,6 @@ func saveStatInJSON(stats []statistics.StatQuestion, name string) {
 	f.Sync()
 	f.Close()
 }
-
 
 func storeAClasseResults() storage.Classe {
 
