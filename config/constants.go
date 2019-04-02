@@ -1,4 +1,4 @@
 package config
 
-const NbQuestions = 3
+const NbQuestions = 19
 const MaxNote = 6

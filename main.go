@@ -43,6 +43,7 @@ func main() {
 			fmt.Println("Fin du calcul")
 		case "stop\n":
 			loop = false
+			exportInCSV()
 			fmt.Println("Arrêt du programme :)")
 		}
 	}
@@ -158,7 +159,134 @@ func createStudentsStats(classe *storage.Classe, stats *statistics.StatClasse) {
 	}
 }
 
-func saveInCSV(classe *storage.Classe) {
+func exportInCSV() {
+	dirname := "."
+	f, err := os.Open(dirname)
+	if err != nil {
+		log.Fatal(err)
+	}
+	files, err := f.Readdir(-1)
+	f.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		if strings.Contains(file.Name(), "allStats.json") {
+			exportAllInCSV()
+		}else if strings.Contains(file.Name(), "Stats.json") {
+			exportSchoolInCSV(file.Name())
+		} else if strings.Contains(file.Name(), ".json") {
+			exportClasseInCSV(file.Name())
+		}
+	}
+}
+
+func exportClasseInCSV(fileName string) {
+	f, err := os.Create(fileName[0:len(fileName)-5] + ".csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsonFile, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	classe := storage.Classe{}
+	json.Unmarshal(byteValue, &classe)
+
+	toWrite := "Statistiques de la classe : "+ fileName[0:len(fileName)-5] +"\nÉlève n°"
+	for i := 1 ; i <= config.NbQuestions ; i++{
+		toWrite += fmt.Sprintf(",Question n°%d", i)
+	}
+	toWrite += ",Somme de la question 1 à 9,Somme de la question 10 à 19,Total\n"
+
+	var i uint
+	for i = 0; i < classe.NbStudent ; i++{
+		toWrite += fmt.Sprintf("%d,", i+1)
+		for j:= 0; j < config.NbQuestions ; j++  {
+			toWrite += fmt.Sprintf("%d,", classe.Students[i].Questions[j])
+		}
+		toWrite += fmt.Sprintf("%d,", classe.Stats.StatStudents[i].Sum1to9)
+		toWrite += fmt.Sprintf("%d,", classe.Stats.StatStudents[i].Sum10to19)
+		toWrite += fmt.Sprintf("%d\n", classe.Stats.StatStudents[i].SumTotal)
+	}
+	toWrite += "\nMoyenne,"
+	for k:= 0; k < config.NbQuestions ; k++ {
+		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].Average)
+	}
+	toWrite += "\nBas,"
+	for k:= 0; k < config.NbQuestions ; k++ {
+		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageLow)
+	}
+	toWrite += "\nHaut,"
+	for k:= 0; k < config.NbQuestions ; k++ {
+		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageHigh)
+	}
+
+
+
+	f.Write([]byte(toWrite))
+	f.Close()
+	jsonFile.Close()
+}
+
+func exportSchoolInCSV(fileName string) {
+	f, err := os.Create(fileName[0:len(fileName)-5] + ".csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsonFile, err := os.Open(fileName)
+	if err != nil {
+		fmt.Println(err)
+	}
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result = make([]statistics.StatQuestion, config.NbQuestions)
+	json.Unmarshal(byteValue, &result)
+
+	toWrite := "Statistiques de l'école : "+ fileName[0:len(fileName)-5] +"\nNuméro de la question,Moyenne,Bas,Haut\n"
+	i := 1
+	for _, stat := range result{
+		aver := fmt.Sprintf("%f", stat.Average)
+		low := fmt.Sprintf("%f", stat.PercentageLow)
+		high := fmt.Sprintf("%f", stat.PercentageHigh)
+		toWrite += fmt.Sprintf("%d", i) + "," + aver  + "," + low + "," + high + "\n"
+		i++
+	}
+
+	f.Write([]byte(toWrite))
+	f.Close()
+	jsonFile.Close()
+}
+
+func exportAllInCSV() {
+	f, err := os.Create("all.csv")
+	if err != nil {
+		log.Fatal(err)
+	}
+	jsonFile, err := os.Open("allStats.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var result = make([]statistics.StatQuestion, config.NbQuestions)
+	json.Unmarshal(byteValue, &result)
+
+	toWrite := "Statistiques globales :\nNuméro de la question,Moyenne,Bas,Haut\n"
+	i := 1
+	for _, stat := range result{
+		aver := fmt.Sprintf("%f", stat.Average)
+		low := fmt.Sprintf("%f", stat.PercentageLow)
+		high := fmt.Sprintf("%f", stat.PercentageHigh)
+		toWrite += fmt.Sprintf("%d", i) + "," + aver  + "," + low + "," + high + "\n"
+		i++
+	}
+
+	f.Write([]byte(toWrite))
+	f.Close()
+	jsonFile.Close()
 }
 
 func saveInJSON(classe *storage.Classe) {
