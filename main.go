@@ -17,12 +17,15 @@ func main() {
 
 	reader := bufio.NewReader(os.Stdin)
 	loop := true
+
 	for loop {
 		fmt.Println("")
 		fmt.Println("Choisir une option :")
 		fmt.Println("\t- new : créer une nouvelle classe")
 		fmt.Println("\t- export : génére le tableau des statistiques")
 		fmt.Println("\t- stop : stop le programme")
+		fmt.Println("\t- love : montre de l'amour à l'utilisateur")
+		fmt.Println("\t- test : vérifie la configuration")
 		input, _ := reader.ReadString('\n')
 		switch input {
 		case "new\n":
@@ -41,11 +44,25 @@ func main() {
 			fmt.Println("Calcul des stats globales")
 			saveStatInJSON(createStatForMutipleClasses(classes), "allStats")
 			fmt.Println("Fin du calcul")
+			fmt.Println("Création des tableaux")
+			exportInCSV()
+		case "love\n":
+			fmt.Println("I love you <3")
+		case "test\n":
+			testDir()
 		case "stop\n":
 			loop = false
-			exportInCSV()
 			fmt.Println("Arrêt du programme :)")
 		}
+	}
+}
+
+func testDir() {
+	_, err := os.Open(config.TargetDir)
+	if err != nil {
+		fmt.Println("ERREUR dans la config --> appeler tange tange à l'aide")
+	} else {
+		fmt.Println("Rien d'anormal détecté dans la configuration")
 	}
 }
 
@@ -59,7 +76,7 @@ func loadBySchool(classes []storage.Classe) map[string][]storage.Classe {
 
 func loadAllClasses() []storage.Classe {
 	var classes = make([]storage.Classe, 0)
-	dirname := "."
+	dirname := config.TargetDir
 	f, err := os.Open(dirname)
 	if err != nil {
 		log.Fatal(err)
@@ -81,7 +98,7 @@ func loadAllClasses() []storage.Classe {
 func loadAClass(fileName string) storage.Classe {
 	classe := storage.Classe{}
 	// Open our jsonFile
-	jsonFile, err := os.Open(fileName)
+	jsonFile, err := os.Open(config.TargetDir + fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -160,7 +177,7 @@ func createStudentsStats(classe *storage.Classe, stats *statistics.StatClasse) {
 }
 
 func exportInCSV() {
-	dirname := "."
+	dirname := config.TargetDir
 	f, err := os.Open(dirname)
 	if err != nil {
 		log.Fatal(err)
@@ -183,11 +200,11 @@ func exportInCSV() {
 }
 
 func exportClasseInCSV(fileName string) {
-	f, err := os.Create(fileName[0:len(fileName)-5] + ".csv")
+	f, err := os.Create(config.TargetDir + fileName[0:len(fileName)-5] + ".csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile, err := os.Open(fileName)
+	jsonFile, err := os.Open(config.TargetDir + fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -232,11 +249,11 @@ func exportClasseInCSV(fileName string) {
 }
 
 func exportSchoolInCSV(fileName string) {
-	f, err := os.Create(fileName[0:len(fileName)-5] + ".csv")
+	f, err := os.Create(config.TargetDir + fileName[0:len(fileName)-5] + ".csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile, err := os.Open(fileName)
+	jsonFile, err := os.Open(config.TargetDir + fileName)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -261,11 +278,11 @@ func exportSchoolInCSV(fileName string) {
 }
 
 func exportAllInCSV() {
-	f, err := os.Create("all.csv")
+	f, err := os.Create(config.TargetDir + "all.csv")
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonFile, err := os.Open("allStats.json")
+	jsonFile, err := os.Open(config.TargetDir + "allStats.json")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -294,7 +311,7 @@ func saveInJSON(classe *storage.Classe) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.Create(classe.Name + ".json")
+	f, err := os.Create(config.TargetDir + classe.Name + ".json")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -311,7 +328,7 @@ func saveStatInJSON(stats []statistics.StatQuestion, name string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	f, err := os.Create(name + ".json")
+	f, err := os.Create(config.TargetDir + name + ".json")
 	if err != nil {
 		log.Fatal(err)
 	}
