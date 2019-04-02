@@ -141,18 +141,23 @@ func createQuestionsStats(classe *storage.Classe, stats *statistics.StatClasse) 
 		var happy uint
 		var sum uint
 		var j uint
+		var noAnswer uint
 		for j = 0; j < classe.NbStudent; j++ {
 			note := classe.Students[j].Questions[i]
-			sum += note //TODO : si le resultat est 42, ignorer
-			if note >= 4 {
-				happy++
+			if note > config.MaxNote {
+				noAnswer++
 			} else {
-				notHappy++
+				sum += note
+				if note >= 4 {
+					happy++
+				} else {
+					notHappy++
+				}
 			}
 		}
-		stats.StatQuestions[i].Average = float64(sum) / float64(classe.NbStudent)
-		stats.StatQuestions[i].PercentageHigh = float64(happy) * 100.0 / float64(classe.NbStudent)
-		stats.StatQuestions[i].PercentageLow = float64(notHappy) * 100.0 / float64(classe.NbStudent)
+		stats.StatQuestions[i].Average = float64(sum) / float64(classe.NbStudent-noAnswer)
+		stats.StatQuestions[i].PercentageHigh = float64(happy) * 100.0 / float64(classe.NbStudent-noAnswer)
+		stats.StatQuestions[i].PercentageLow = float64(notHappy) * 100.0 / float64(classe.NbStudent-noAnswer)
 	}
 
 }
@@ -165,12 +170,14 @@ func createStudentsStats(classe *storage.Classe, stats *statistics.StatClasse) {
 		student := classe.Students[i]
 		var j uint
 		for j = 0; j < config.NbQuestions; j++ {
-			if j < 9 { //TODO : si le resultat est 42, ignorer
-				stats.StatStudents[i].Sum1to9 += student.Questions[j]
-			} else {
-				stats.StatStudents[i].Sum10to19 += student.Questions[j]
+			if student.Questions[j] <= config.MaxNote {
+				if j < 9 {
+					stats.StatStudents[i].Sum1to9 += student.Questions[j]
+				} else {
+					stats.StatStudents[i].Sum10to19 += student.Questions[j]
+				}
+				stats.StatStudents[i].SumTotal += student.Questions[j]
 			}
-			stats.StatStudents[i].SumTotal += student.Questions[j]
 		}
 	}
 }
@@ -304,6 +311,7 @@ func exportAllInCSV() {
 }
 
 func saveInJSON(classe *storage.Classe) {
+	fmt.Println(classe)
 	jsonClasse, err := json.Marshal(classe)
 	if err != nil {
 		log.Fatal(err)
