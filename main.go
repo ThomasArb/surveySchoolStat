@@ -228,7 +228,11 @@ func exportClasseInCSV(fileName string) {
 	for i = 0; i < classe.NbStudent; i++ {
 		toWrite += fmt.Sprintf("%d,", i+1)
 		for j := 0; j < config.NbQuestions; j++ {
-			toWrite += fmt.Sprintf("%d,", classe.Students[i].Questions[j])
+			if classe.Students[i].Questions[j] == 42 {
+				toWrite += "?,"
+			} else {
+				toWrite += fmt.Sprintf("%d,", classe.Students[i].Questions[j])
+			}
 		}
 		toWrite += fmt.Sprintf("%d,", classe.Stats.StatStudents[i].Sum1to9)
 		toWrite += fmt.Sprintf("%d,", classe.Stats.StatStudents[i].Sum10to19)
