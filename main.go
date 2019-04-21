@@ -240,15 +240,15 @@ func exportClasseInCSV(fileName string) {
 	}
 	toWrite += "\nMoyenne,"
 	for k := 0; k < config.NbQuestions; k++ {
-		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].Average)
+		toWrite += fmt.Sprintf("%.2f,", classe.Stats.StatQuestions[k].Average)
 	}
 	toWrite += "\nPourcentage de réponse inférieur ou égale à 3,"
 	for k := 0; k < config.NbQuestions; k++ {
-		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageLow)
+		toWrite += fmt.Sprintf("%.2f,", classe.Stats.StatQuestions[k].PercentageLow)
 	}
 	toWrite += "\nPourcentage de réponse supérieure ou égale à 4,"
 	for k := 0; k < config.NbQuestions; k++ {
-		toWrite += fmt.Sprintf("%f,", classe.Stats.StatQuestions[k].PercentageHigh)
+		toWrite += fmt.Sprintf("%.2f,", classe.Stats.StatQuestions[k].PercentageHigh)
 	}
 
 	f.Write([]byte(toWrite))
@@ -273,9 +273,9 @@ func exportSchoolInCSV(fileName string) {
 	toWrite := "Statistiques de l'école : " + fileName[0:len(fileName)-5] + "\nNuméro de la question,Moyenne,Pourcentage de réponse inférieur ou égale à 3,Pourcentage de réponse supérieure ou égale à 4\n"
 	i := 1
 	for _, stat := range result {
-		aver := fmt.Sprintf("%f", stat.Average)
-		low := fmt.Sprintf("%f", stat.PercentageLow)
-		high := fmt.Sprintf("%f", stat.PercentageHigh)
+		aver := fmt.Sprintf("%.2f", stat.Average)
+		low := fmt.Sprintf("%.2f", stat.PercentageLow)
+		high := fmt.Sprintf("%.2f", stat.PercentageHigh)
 		toWrite += fmt.Sprintf("%d", i) + "," + aver + "," + low + "," + high + "\n"
 		i++
 	}
@@ -302,9 +302,9 @@ func exportAllInCSV() {
 	toWrite := "Statistiques globales :\nNuméro de la question,Moyenne,Pourcentage de réponse inférieur ou égale à 3,Pourcentage de réponse supérieure ou égale à 4\n"
 	i := 1
 	for _, stat := range result {
-		aver := fmt.Sprintf("%f", stat.Average)
-		low := fmt.Sprintf("%f", stat.PercentageLow)
-		high := fmt.Sprintf("%f", stat.PercentageHigh)
+		aver := fmt.Sprintf("%.2f", stat.Average)
+		low := fmt.Sprintf("%.2f", stat.PercentageLow)
+		high := fmt.Sprintf("%.2f", stat.PercentageHigh)
 		toWrite += fmt.Sprintf("%d", i) + "," + aver + "," + low + "," + high + "\n"
 		i++
 	}
